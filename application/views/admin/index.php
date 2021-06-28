@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap4.min.css"/>
     <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"> -->
 
+    <script src="//cdn.ckeditor.com/4.16.1/standard/ckeditor.js"></script>
 
     <!-- <script src="//cdn.ckeditor.com/4.16.1/standard/ckeditor.js"></script> -->
     
@@ -21,6 +22,10 @@
         Tambah Data
         </button>
 
+        <button type="button" class="btn btn-danger mb-3" onClick="logout()">
+        Logout
+        </button>
+
         <!-- Modal -->
         <div class="modal fade" id="modalArtikelForm" tabindex="-1" role="dialog" aria-labelledby="modalArtikelFormTitle" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
@@ -31,7 +36,7 @@
                 <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form action="#" id="formData" method="post" enctype="multipart/form-data">
+            <form action="#" id="formData" method="post" enctype="multipart/formData">
             <div class="modal-body" form>
                 <input type="hidden" id="id" name="id" value="">
                 <div class="form-group">
@@ -41,12 +46,12 @@
                 </div>
                 <div class="form-group">
                     <label for="isi">Isi Artikel</label>
-                    <textarea name="isi_artikel" id="isi" placeholder="Isi"></textarea>
+                    <textarea name="isi_artikel" id="isi" class="form-control" placeholder="Isi"></textarea>
                     <!-- <div class="invalid-feedback"></div> -->
                 </div>
                 <div class="form-group">
-                    <label for="thumbnail">Thumbnail</label>
-                    <input type="file" required class="form-control" id="thumbnail" name="thumbnail" size="20">
+                    <label for="thumbnail_artikel">Thumbnail</label>
+                    <input type="text" required class="form-control" id="thumbnail_artikel" name="thumbnail_artikel" size="20">
                     <!-- <div class="invalid-feedback"></div> -->
                 </div>
                 <div class="form-group">
@@ -61,7 +66,7 @@
             </div>
             <div class="modal-footer">
                 <button type="submit" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="submit" class="btn btn-primary" id="btnSave" onClick="save()">Save changes</button>
+                <button type="submit" class="btn btn-primary" id="btnSave" onClick="save()" value="upload">Save changes</button>
             </div>
             </form>
             </div>
@@ -100,21 +105,19 @@
     <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"> </script>
     <script src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap4.min.js"> </script>
 
-    <script src="https://cdn.tiny.cloud/1/evttxjjzzwiqmw5m2zxodbfq3rw9dtq7nqjmfxyszdv1ttj3/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
+    <!-- <script src="https://cdn.tiny.cloud/1/evttxjjzzwiqmw5m2zxodbfq3rw9dtq7nqjmfxyszdv1ttj3/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script> -->
     
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script> -->
-    
-    <!-- <script src="http://code.jquery.com/jquery.min.js"></script> -->
-    <!-- <script src="jQuery.tagify.js"></script>
-    <script src="tagify.js"></script> -->
     <script>
-
+        for (instance in CKEDITOR.instances) {
+        CKEDITOR.instances[instance].updateElement();
+        }
         var saveData;
         var modal = $('#modalArtikelForm');
         var dataTable = $('#data-artikel');
         var formData = $('#formData');
         var title = $('#modalTitle');
         var btnSave = $('#btnSave');
+        var url = "http://localhost:8080/ArtikelPanel/";
 
         $(document).ready(function() {
             dataTable.DataTable({
@@ -124,7 +127,6 @@
                 "ajax"       :{
                     "url": "<?= base_url('admin/getData')?>",
                     "type": "POST"
-
                 },
                 "columnDefs" : [{
                     "target" : [-1],
@@ -143,15 +145,6 @@
             title.text('Form Artikel');
         }
         function save(){
-        	tinyMCE.triggerSave();
-
-        	let fd = new FormData();
-			fd.append('judul', $('#judul').val());
-			fd.append('isi', $('#isi').val());
-			fd.append('thumbnail', $('#thumbnail')[0].files[0]);
-			fd.append('tag', $('#tag').val());
-			fd.append('kategori', $('#kategori').val());
-			console.log(fd)
 			btnSave.text('Loading....');
             btnSave.attr('disabled',true);
             if(saveData == 'tambah'){
@@ -162,7 +155,7 @@
             $.ajax({
                 type: "POST",
                 url: url,
-                data: fd,
+                data: formData.serialize(),
                 dataType: "JSON",
                 success: function(response){
                     if(response.status == 'success'){
@@ -170,14 +163,13 @@
                         reloadTable();
                     }
                 },
-
                 error: function(){
                     console.log('Error Database');
                 }
-
             });
-           
         }
+
+
         function byid(id, type){
             if(type == 'edit'){
                 saveData = 'edit';
@@ -195,8 +187,8 @@
                         btnSave.attr('disabled', false);
                         $('[name="id"]').val(response.id);
                         $('[name="judul"]').val(response.judul_artikel);
-                        $('[name="isi"]').val(response.isi_artikel);
-                        $('[name="thumbnail"]').val(response.thumbnail_artikel);
+                        $('[name="isi_artikel"]').val(response.isi_artikel);
+                        $('[name="thumbnail_artikel"]').val(response.thumbnail_artikel);
                         $('[name="tag"]').val(response.tag_artikel);
                         $('[name="kategori"]').val(response.kategori_artikel);
                         modal.modal('show');
@@ -222,17 +214,37 @@
             });
         }
 
-        // CKEDITOR.replace( 'isi' );
+        function logout(){
+            // alert("Yakin?");
+            window.history.back();
+        }
 
-        // FITUR WYSIWYG
-        tinymce.init({
-            selector: 'textarea',
-            plugins: 'a11ychecker advcode casechange formatpainter linkchecker autolink lists checklist media mediaembed pageembed permanentpen powerpaste table advtable tinycomments tinymcespellchecker',
-            toolbar: 'a11ycheck addcomment showcomments casechange checklist code formatpainter pageembed permanentpen table',
-            toolbar_mode: 'floating',
-            tinycomments_mode: 'embedded',
-            tinycomments_author: 'Author name',
-        });
+        // function SerializeForm(){
+        //     // Make sure we have the reformatted version of the initial content in the textarea
+        //     CKEDITOR.instances.myEditor.updateElement();
+
+        //     // Save the initial serialization
+        //     form_data.edit_initial = $('#formData').serialize();
+        // }
+
+        // form_data.edit_initial = $('#formData').serialize();
+
+        // Create editor instance   
+        CKEDITOR.replace( 'isi' );
+
+        // // Tap into CKEditor's ready event to serialize the initial form state
+        // CKEDITOR.instances.myEditor.on("instanceReady", SerializeForm);
+
+
+
+        // tinymce.init({
+        //     selector: 'textarea',
+        //     plugins: 'a11ychecker advcode casechange formatpainter linkchecker autolink lists checklist media mediaembed pageembed permanentpen powerpaste table advtable tinycomments tinymcespellchecker',
+        //     toolbar: 'a11ycheck addcomment showcomments casechange checklist code formatpainter pageembed permanentpen table',
+        //     toolbar_mode: 'floating',
+        //     tinycomments_mode: 'embedded',
+        //     tinycomments_author: 'Author name',
+        // });
 
 
         // tagging

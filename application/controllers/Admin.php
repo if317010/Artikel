@@ -6,6 +6,8 @@ class Admin extends CI_Controller {
     public function __construct(){
         parent::__construct();
         $this->load->model('M_Admin');
+        $this->load->library('form_validation');
+        $this->load->library('upload');
     }
 
     public function index(){
@@ -44,46 +46,53 @@ class Admin extends CI_Controller {
     }
 
     public function add(){
-    	var_dump($this->input->post('judul'));
-    	var_dump($_FILES['file']['thumbnail']);
-    	die();
-        // $this->_validation();
+                // $config['upload_path']          = './assets/images/';
+                // $config['allowed_types']        = 'gif|jpg|png|jpeg';
+                // $config['max_size']             = 10000;
+                // $config['max_width']            = 10000;
+                // $config['max_height']           = 10000;
 
-        $thumbnail = $_FILES['file'];
+                // $this->load->library('upload', $config);
 
-        if($thumbnail=''){
+                // if (! $this->upload->do_upload('thumbnail_artikel'))
+                // {
+                //     echo "Gagal Upload";
+                // }else{
 
-        }else{
-            $config['upload_path']          = './assets/foto';
-            $config['allowed_types']        = 'gif|jpg|png';
+                //     $gambar = $this->upload->data();
+                //     $gambar = $gambar['file_name'];
+                //     $judul = $this->input->post('judul',TRUE);
+                //     $isi_artikel = $this->input->post('isi_artikel',TRUE);
+                //     $tag = $this->input->post('tag',TRUE);
+                //     $kategori = $this->input->post('kategori',TRUE);
 
-            $this->load->library('upload',$config);
-            if(!$this->upload->do_upload('thumbnail')){
-                echo "Gagal"; die();
-            }else{
-                $thumbnail = $this->upload->data('file_name');
-            }
-        }
+                //     $data = array(
+                //         'judul_artikel' => $judul,
+                //         'isi_artikel' => $isi_artikel,
+                //         'thumbnail_artikel' => $gambar,
+                //         'tag_artikel' => $tag,
+                //         'kategori_artikel' => $kategori
+                //     );
 
-        $data = [
-            'judul_artikel' => htmlspecialchars($this->input->post('judul')),
-            'isi_artikel' => htmlspecialchars($this->input->post('isi_artikel')),
-            'thumbnail_artikel' => $thumbnail,
-            'tag_artikel' => htmlspecialchars($this->input->post('tag')),
-            'kategori_artikel' => htmlspecialchars($this->input->post('kategori')),
+                    $data = [
+                        'judul_artikel' => htmlspecialchars($this->input->post('judul')),
+                        'isi_artikel' => htmlspecialchars($this->input->post('isi_artikel')),
+                        'thumbnail_artikel' => htmlspecialchars($this->input->post('thumbnail_artikel')),
+                        'tag_artikel' => htmlspecialchars($this->input->post('tag')),
+                        'kategori_artikel' => htmlspecialchars($this->input->post('kategori')),
+            
+                    ];
 
-        ];
+                    if($this->M_Admin->create($data) > 0){
+                        $message['status'] = 'success';
+                    }else {
+                        $message['status'] = 'failed';
+                    };
+                    $this->output->set_content_type('application/json')->set_output(json_encode($message));
+                // }
 
-        if($this->M_Admin->create($data) > 0){
-            $message['status'] = 'success';
-        }else {
-            $message['status'] = 'failed';
-        };
 
-        var_dump($data);
-        die;
 
-        $this->output->set_content_type('application/json')->set_output(json_encode($message));
     }
 
     public function byid($id){
@@ -95,7 +104,7 @@ class Admin extends CI_Controller {
         $data = [
             'judul_artikel' => htmlspecialchars($this->input->post('judul')),
             'isi_artikel' => htmlspecialchars($this->input->post('isi_artikel')),
-            'thumbnail_artikel' => htmlspecialchars($this->input->post('thumbnail')),
+            'thumbnail_artikel' => htmlspecialchars($this->input->post('thumbnail_artikel')),
             'tag_artikel' => htmlspecialchars($this->input->post('tag')),
             'kategori_artikel' => htmlspecialchars($this->input->post('kategori')),
             
@@ -120,41 +129,4 @@ class Admin extends CI_Controller {
         $this->output->set_content_type('application/json')->set_output(json_encode($message));
     }
 
-    // private function _validation(){
-    //     $data = array();
-    //     $data['error_string'] = array();
-    //     $data['inputerror'] = array();
-    //     $data['status'] = true;
-
-    //     if($this->input->post('judul') == ''){
-    //         $data['inputerror'][] = 'judul';
-    //         $data['error_string'][] = 'Data tidak boleh kosong';
-    //         $data['status'] = false;
-    //     }
-    //     if($this->input->post('isi') == ''){
-    //         $data['inputerror'][] = 'isi';
-    //         $data['error_string'][] = 'Data tidak boleh kosong';
-    //         $data['status'][] = false;
-    //     }
-    //     if($this->input->post('thumbnail') == ''){
-    //         $data['inputerror'][] = 'thumbnail';
-    //         $data['error_string'][] = 'Data tidak boleh kosong';
-    //         $data['status'][] = false;
-    //     }
-    //     if($this->input->post('tag') == ''){
-    //         $data['inputerror'][] = 'tag';
-    //         $data['error_string'][] = 'Data tidak boleh kosong';
-    //         $data['status'][] = false;
-    //     }
-    //     if($this->input->post('kategori') == ''){
-    //         $data['inputerror'][] = 'kategori';
-    //         $data['error_string'][] = 'Data tidak boleh kosong';
-    //         $data['status'][] = false;
-    //     }
-
-    //     if($data['status'] == false){
-    //         echo json_encode($data);
-    //         exit(); 
-    //     }
-    // } 
 }
