@@ -36,7 +36,7 @@
                 <input type="hidden" id="id" name="id" value="">
                 <div class="form-group">
                     <label for="judul">Judul Artikel</label>
-                    <input type="text" required class="form-control " class="form-control " id="judul"  name="judul"  placeholder="Judul Artikel">
+                    <input type="text" required class="form-control " class="form-control " id="judul" name="judul" placeholder="Judul Artikel">
                     <!-- <div class="invalid-feedback"></div> -->
                 </div>
                 <div class="form-group">
@@ -51,11 +51,11 @@
                 </div>
                 <div class="form-group">
                     <label for="tag">Tag</label>
-                    <input type="text" required " class="form-control" id="tag" name="tag" placeholder="Tag">
+                    <input type="text" required class="form-control" id="tag" name="tag" placeholder="Tag">
                 </div>
                 <div class="form-group">
                     <label for="kategori">Kategori</label>
-                    <input type="text" required " class="form-control" id="kategori" name="kategori" placeholder="Kategori">
+                    <input type="text" required class="form-control" id="kategori" name="kategori" placeholder="Kategori">
                     <!-- <div class="invalid-feedback"></div> -->
                 </div>
             </div>
@@ -131,7 +131,7 @@
                     "orderable": false
                 }]
             });
-        } );
+        });
 
         function reloadTable(){
             dataTable.DataTable().ajax.reload();
@@ -143,7 +143,16 @@
             title.text('Form Artikel');
         }
         function save(){
-            btnSave.text('Loading....');
+        	tinyMCE.triggerSave();
+
+        	let fd = new FormData();
+			fd.append('judul', $('#judul').val());
+			fd.append('isi', $('#isi').val());
+			fd.append('thumbnail', $('#thumbnail')[0].files[0]);
+			fd.append('tag', $('#tag').val());
+			fd.append('kategori', $('#kategori').val());
+			console.log(fd)
+			btnSave.text('Loading....');
             btnSave.attr('disabled',true);
             if(saveData == 'tambah'){
                 url = "<?= base_url('admin/add');?>"
@@ -153,7 +162,7 @@
             $.ajax({
                 type: "POST",
                 url: url,
-                data: formData.serialize(),
+                data: fd,
                 dataType: "JSON",
                 success: function(response){
                     if(response.status == 'success'){

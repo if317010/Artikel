@@ -44,15 +44,19 @@ class Admin extends CI_Controller {
     }
 
     public function add(){
+    	var_dump($this->input->post('judul'));
+    	var_dump($_FILES['file']['thumbnail']);
+    	die();
         // $this->_validation();
-        
-        $thumbnail = $_FILES['thumbnail_artikel'];
+
+        $thumbnail = $_FILES['file'];
+
         if($thumbnail=''){
 
         }else{
             $config['upload_path']          = './assets/foto';
             $config['allowed_types']        = 'gif|jpg|png';
-                
+
             $this->load->library('upload',$config);
             if(!$this->upload->do_upload('thumbnail')){
                 echo "Gagal"; die();
@@ -67,7 +71,7 @@ class Admin extends CI_Controller {
             'thumbnail_artikel' => $thumbnail,
             'tag_artikel' => htmlspecialchars($this->input->post('tag')),
             'kategori_artikel' => htmlspecialchars($this->input->post('kategori')),
-            
+
         ];
 
         if($this->M_Admin->create($data) > 0){
